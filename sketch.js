@@ -3,7 +3,7 @@ const PlayerAccelation = 1;
 const PlayerMoveResist = 0.1;
 
 const BulletSpeed = 10;
-const PlayerBuleltInterval = 200;
+const PlayerBuleltInterval = 100;
 
 let player;
 
@@ -85,7 +85,7 @@ class Player{
 
     if(this.pos.x < 0){
       this.pos.x = width + this.pos.x;
-    }else if(this.pos.x > 0){
+    }else if(this.pos.x > width){
       this.pos.x = this.pos.x - width;
     }
   }
@@ -173,13 +173,16 @@ function setup() {
   Enemies.setScheudle(
     2000, new DropEnemy(width* 3/4, 1)
   );
+
 }
 
 function draw() {
   background(50);
+
   player.update();
   Bullets.update();
   Enemies.update();
+
 
   player.draw();
   Bullets.draw();
