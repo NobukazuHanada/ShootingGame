@@ -69,6 +69,7 @@ class Player{
     this.pos = createVector(width/2, height  - 100);
     this.velocity = createVector(0,0);
     this.acceleaction = createVector(0,0);
+    this.size = 20;
 
     setInterval(()=>{
       Bullets.add(this);
@@ -76,6 +77,7 @@ class Player{
   }
 
   update(){
+    /*
     this.acceleaction.x = 
       Input.horizontal() * PlayerAccelation
     this.acceleaction.sub(this.velocity.copy().mult(PlayerMoveResist));
@@ -87,14 +89,15 @@ class Player{
       this.pos.x = width + this.pos.x;
     }else if(this.pos.x > width){
       this.pos.x = this.pos.x - width;
-    }
+    }*/
+    this.pos.x = mouseX;
   }
 
   draw(){
     fill(100);
     stroke(255);
     rectMode(CENTER);
-    square(this.pos.x, this.pos.y, 20);
+    square(this.pos.x, this.pos.y, this.size);
   }
 }
 
@@ -102,6 +105,7 @@ class Bullet{
   constructor(pos){
     this.pos = pos.copy();
     this.velocity = createVector(0, -BulletSpeed);
+    this.size = 3;
   }
 
   alive(){
@@ -110,7 +114,23 @@ class Bullet{
     ){
       return false;
     }
+    if(this.checkHittingEnemy()){
+      return false;
+    }
     return true;
+  }
+
+  checkHittingEnemy(){
+    for(let enemy of Enemies.enemies){
+      const dx = abs(this.pos.x - enemy.pos.x);
+      const dy = abs(this.pos.y - enemy.pos.y);
+      const l = (this.size + enemy.size) / 2
+      if(dx < l && dy < l){
+        enemy.hit = true;
+        return true;
+      }
+    }
+    return false;
   }
 
   update(){
@@ -121,7 +141,7 @@ class Bullet{
     ellipseMode(CENTER);
     fill(255);
     stroke(255);
-    circle(this.pos.x, this.pos.y, 5);
+    circle(this.pos.x, this.pos.y, this.size);
   }
 }
 
@@ -148,16 +168,25 @@ class Enemy{
 class DropEnemy extends Enemy{
   constructor(x, speed){
     super();
+    this.color = color(random(255), random(255), random(255));
     this.pos = createVector(x, 0);
     this.velocity = createVector(0, speed);
     this.acceleaction = createVector(0,0);
+    this.size = random(10, width/10);
+  }
+
+  update(){
+    super.update();
+    if( this.hit ){
+      this.velocity = createVector(0,0);
+    }
   }
 
   draw(){
-    fill(200);
+    fill(this.color);
     stroke(255);
     rectMode(CENTER);
-    square(this.pos.x, this.pos.y, 20);
+    square(this.pos.x, this.pos.y, this.size);
   }
 }
 
@@ -166,17 +195,16 @@ class DropEnemy extends Enemy{
 function setup() {
   createCanvas(windowWidth, windowHeight);
   player = new Player();
-
-  Enemies.setScheudle(
-    1000, new DropEnemy(width/4, 1)
-  );
-  Enemies.setScheudle(
-    2000, new DropEnemy(width* 3/4, 1)
-  );
-
 }
 
 function draw() {
+  if( frameCount % 50 == 0){
+    Enemies.setScheudle(
+      1000 + millis(), new DropEnemy(random(width), 1)
+    );
+  }
+
+
   background(50);
 
   player.update();
